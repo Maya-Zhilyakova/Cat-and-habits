@@ -56,6 +56,7 @@ class Gui:
         - Верхнюю панель с текстом
         - Кота в правой части
         """
+        self.root.iconbitmap(resource_path("Images/cat_ico.ico"))
         self.root.overrideredirect(True)
         self.root.geometry("550x300+500+300")
 

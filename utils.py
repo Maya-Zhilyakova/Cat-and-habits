@@ -7,6 +7,18 @@ import os
 fg_white = "#e7dede"
 fg_black = "#181327"
 
+bg_dark = "#26124C"
+bg_info = "#513B68"
+fg_info_right = "#7F6A95"
+entry = "#e0d4ec"
+bg_light = "#7C5E9A"
+bg_btn_close = "#d63232"
+bg_btn_open = "#5ed632"
+bg_btn_ok = "#7821cf"
+bg_btn_left = "#7632BA"
+bg_title = "#533e6b"
+bg_active = "#653892"
+'''
 bg_dark = "#2D1B4E"
 bg_info = "#513B68"
 fg_info_right = "#7F6A95"
@@ -18,9 +30,9 @@ bg_btn_ok = "#7821cf"
 bg_btn_left = "#653892"
 bg_title = "#533e6b"
 bg_active = "#653892"
+'''
+# Загрузка фраз кота с корректным путём для .exe
 
-with open('text_for_little.json', 'r', encoding='utf-8') as file:
-    phrases = json.load(file)
 
 def get_random_phrase(category):
     return random.choice(phrases['categories'][category])
@@ -32,6 +44,10 @@ def resource_path(relative_path):
     except AttributeError:
         base_path = os.path.abspath(".")
     return os.path.join(base_path, relative_path)
+
+json_path = resource_path('text_for_little.json')
+with open(json_path, 'r', encoding='utf-8') as file:
+    phrases = json.load(file)
 
 def btn_left(window, text, command):
     return Button(

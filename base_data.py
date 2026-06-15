@@ -1,9 +1,17 @@
 import sqlite3
 from datetime import date, datetime
+import os
 
 class DataBase:
     def __init__(self):
-        self.conn = sqlite3.connect("habits.db")
+        app_data = os.path.join(os.environ['APPDATA'], 'CatHabitsTracker')
+        
+        if not os.path.exists(app_data):
+            os.makedirs(app_data)
+            
+        db_path = os.path.join(app_data, 'habits.db')
+        
+        self.conn = sqlite3.connect(db_path)
 
     def create_table(self):
         cursor = self.conn.cursor()
