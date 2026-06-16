@@ -1,17 +1,9 @@
 import sqlite3
-from datetime import date, datetime
-import os
+from datetime import date, datetime, timedelta
 
 class DataBase:
     def __init__(self):
-        app_data = os.path.join(os.environ['APPDATA'], 'CatHabitsTracker')
-        
-        if not os.path.exists(app_data):
-            os.makedirs(app_data)
-            
-        db_path = os.path.join(app_data, 'habits.db')
-        
-        self.conn = sqlite3.connect(db_path)
+        self.conn = sqlite3.connect("habits.db")
 
     def create_table(self):
         cursor = self.conn.cursor()
@@ -39,23 +31,63 @@ class DataBase:
         cursor.execute('''INSERT INTO habits (habit_name) VALUES (?)''', (text,))
         self.conn.commit()
 
+    def add_null_day(self):
+        cursor_1 = self.conn.cursor()
+
+        cursor_1.execute('''
+            SELECT date FROM habit_logs 
+            ORDER BY date DESC LIMIT 1
+        ''')
+        result = cursor_1.fetchone()[0]
+
+        if not result:
+            return
+        
+        date_end_str = result
+        date_end = datetime.strptime(date_end_str, '%Y-%m-%d').date()
+        today = date.today()
+        
+        days_diff = (today - date_end).days
+        
+        if days_diff > 1:
+            for habit_id in range(1, 4):
+                for i in range(1, days_diff):
+                    missing_date = date_end + timedelta(days=i)
+                    cursor_1.execute('''
+                        SELECT COUNT(*) FROM habit_logs 
+                        WHERE habit_id = ? AND date = ?
+                    ''', (habit_id, missing_date))
+                    
+                    if cursor_1.fetchone()[0] == 0:
+                        cursor_1.execute('''
+                            INSERT INTO habit_logs (habit_id, date, completed)
+                            VALUES (?, ?, 0)
+                        ''', (habit_id, missing_date))
+            
+        self.conn.commit()
+
     def count_habits(self):
         cursor = self.conn.cursor()
-        cursor.execute("SELECT COUNT(*) FROM habits")
+        cursor.execute('''SELECT COUNT(*)
+                       FROM habits''')
         result = cursor.fetchone()
         
         return result[0] if result else 0
     
     def count_active(self):
         cursor = self.conn.cursor()
-        cursor.execute('''SELECT COUNT(*) FROM habit_logs WHERE date=?''', (date.today(),))
+        cursor.execute('''SELECT COUNT(*)
+                       FROM habit_logs
+                       WHERE date=?''', (date.today(),))
         result = cursor.fetchone()
         
         return result[0] if result else 0
     
     def state_habit(self, text):
         cursor = self.conn.cursor()
-        cursor.execute('''SELECT COUNT(*) FROM habit_logs WHERE date=? AND habit_id = (SELECT id FROM habits WHERE habit_name =?)''', (date.today(), text,))
+        cursor.execute('''SELECT COUNT(*)
+                       FROM habit_logs
+                       WHERE date=? AND habit_id = (SELECT id FROM habits WHERE habit_name =?)''', (date.today(), text,))
         result = cursor.fetchone()
 
         return result[0] > 0 if result else False
@@ -69,11 +101,14 @@ class DataBase:
             ORDER BY id DESC LIMIT 1
         ''', (habit_name, date.today()))
         result = cursor.fetchone()
+
         return result[0] if result else None
 
     def text_habits(self):
         cursor = self.conn.cursor()
-        cursor.execute('''SELECT habit_name FROM habits ORDER BY id''')
+        cursor.execute('''SELECT habit_name
+                       FROM habits
+                       ORDER BY id''')
         text = cursor.fetchall()
 
         return [text[0][0], text[1][0], text[2][0]]

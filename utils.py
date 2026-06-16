@@ -18,27 +18,13 @@ bg_btn_ok = "#7821cf"
 bg_btn_left = "#7632BA"
 bg_title = "#533e6b"
 bg_active = "#653892"
-'''
-bg_dark = "#2D1B4E"
-bg_info = "#513B68"
-fg_info_right = "#7F6A95"
-entry = "#e0d4ec"
-bg_light = "#7C5E9A"
-bg_btn_close = "#d63232"
-bg_btn_open = "#5ed632"
-bg_btn_ok = "#7821cf"
-bg_btn_left = "#653892"
-bg_title = "#533e6b"
-bg_active = "#653892"
-'''
+
 # Загрузка фраз кота с корректным путём для .exe
-
-
 def get_random_phrase(category):
     return random.choice(phrases['categories'][category])
 
 def resource_path(relative_path):
-    """Получить абсолютный путь к файлу, работает и в .exe и в .py"""
+    # Получить абсолютный путь к файлу, работает и в .exe и в .py
     try:
         base_path = sys._MEIPASS
     except AttributeError:
