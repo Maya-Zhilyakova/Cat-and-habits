@@ -38,8 +38,10 @@ class DataBase:
             SELECT date FROM habit_logs 
             ORDER BY date DESC LIMIT 1
         ''')
-        result = cursor_1.fetchone()[0]
-
+        try:
+            result = cursor_1.fetchone()[0]
+        except:
+            return
         if not result:
             return
         
@@ -98,10 +100,9 @@ class DataBase:
             SELECT completed FROM habit_logs 
             WHERE habit_id = (SELECT id FROM habits WHERE habit_name = ?) 
             AND date = ?
-            ORDER BY id DESC LIMIT 1
         ''', (habit_name, date.today()))
         result = cursor.fetchone()
-
+        
         return result[0] if result else None
 
     def text_habits(self):
@@ -115,20 +116,27 @@ class DataBase:
     
     def add_habit_log(self, text, type):
         cursor = self.conn.cursor()
-
+        
         cursor.execute('''
-            INSERT INTO habit_logs (habit_id, completed, streak_count)
+            SELECT streak_count FROM habit_logs 
+            WHERE habit_id = (SELECT id FROM habits WHERE habit_name = ?) 
+            ORDER BY id DESC LIMIT 1
+        ''', (text,))
+        prev_streak = cursor.fetchone()
+        prev_streak = prev_streak[0] if prev_streak else 0
+        
+        new_streak = prev_streak + 1 if type == 1 else 0
+        
+        cursor.execute('''
+            INSERT OR REPLACE INTO habit_logs (habit_id, date, completed, streak_count)
             VALUES (
                 (SELECT id FROM habits WHERE habit_name = ?),
                 ?,
-                CASE 
-                    WHEN ? = 1
-                       THEN COALESCE((SELECT streak_count FROM habit_logs WHERE habit_id = (SELECT id FROM habits WHERE habit_name = ?) ORDER BY id DESC LIMIT 1), 0) + 1
-                    ELSE 0
-                END
+                ?,
+                ?
             )
-        ''', (text, type, type, text))
-
+        ''', (text, date.today(), type, new_streak))
+        
         self.conn.commit()
 
     def get_procent_completed(self, text):

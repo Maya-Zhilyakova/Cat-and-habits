@@ -41,6 +41,8 @@ class Gui:
 
         self.cat()
 
+        update_color = Button()
+
         self.root.mainloop()
 
     def cat(self):
@@ -159,7 +161,10 @@ class Gui:
 
         else:
             self.text_cat.config(text=get_random_phrase("make_habit"))
-            if int(self.db.count_active()) % 3 == 0 and int(self.db.count_active()) != 0:
+            today_count = self.db.count_active()
+        
+            if today_count == 3:
+            
                 for widget in self.right_container.winfo_children():
                     widget.destroy()
                 Label(self.right_container, text='На сегодня все привычки отмечены.\nПриходите завтра  😺💗', font=('Comic Sans MS', 12), bg=bg_light, fg=fg_white).place(relx=0.03, rely=0.3)
@@ -226,11 +231,6 @@ class Gui:
     def save_active(self, text, type, event=None):
         self.db.add_habit_log(text, type)
         self.make_habits()
-        
-        if int(self.db.count_active()) % 3 == 0 and int(self.db.count_active()) != 0:
-            for widget in self.right_container.winfo_children():
-                widget.destroy()
-            Label(self.right_container, text='На сегодня все привычки отмечены.\nПриходи завтра  😺💗', font=('Comic Sans MS', 12), bg=bg_light, fg=fg_white).place(relx=0.03, rely=0.3)
 
     def statistic_habits(self):
         for widget in self.right_container.winfo_children():
